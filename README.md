@@ -1,81 +1,121 @@
-PROMPT: XÂY DỰNG ML SERVICE (FASTAPI) PHÂN LOẠI DỮ LIỆU IOT
+ML Service for IoT Data Classification
+Building a high-performance FastAPI microservice to classify IoT sensor data using rule-based logic. The service will be optimized for low latency to handle continuous requests from the backend system.
 
-1. Vai trò (Role)
+User Review Required
+IMPORTANT
 
-Bạn là AI Engineer chuyên về triển khai mô hình Machine Learning (MLOps). Nhiệm vụ của bạn là xây dựng một Microservice bằng Python để phục vụ bài toán phân loại dữ liệu IoT.
+Performance Optimization Strategy The service will use:
 
-2. Yêu cầu Chức năng
+In-memory rule-based classification (no model loading overhead)
+FastAPI's async capabilities for concurrent request handling
+Optimized Docker image with multi-stage builds
+Port 5000 as specified in requirements
+NOTE
 
-Service này cung cấp API để Backend gọi sang:
+Classification Logic Using rule-based approach instead of ML model for:
 
-Input: JSON chứa thông tin cảm biến (Temperature, Humidity, CO2...).
+Zero model loading time
+Sub-millisecond prediction latency
+Deterministic results
+Easy to understand and maintain
+Proposed Changes
+Core Application Files
+[NEW] 
+requirements.txt
+Python dependencies with pinned versions for reproducibility:
 
-Processing: Áp dụng logic (hoặc model) để quyết định mức độ ưu tiên.
+fastapi[all] - Web framework with all optional dependencies
+uvicorn[standard] - ASGI server with performance optimizations
+pydantic - Data validation (included with FastAPI)
+scikit-learn - For future ML model integration
+pandas - Data processing utilities
+numpy - Numerical operations
+[NEW] 
+main.py
+Main FastAPI application with optimized endpoints:
 
-Output: Nhãn phân loại: HOT, WARM, hoặc COLD.
+SensorData model: Pydantic schema for input validation (temperature, humidity, co2_level)
+PredictionResponse model: Structured output with label and confidence
+classify_sensor_data(): Optimized rule-based classification function
+POST /predict: Main endpoint with async support
+GET /health: Health check endpoint for container orchestration
+GET /: Root endpoint with API information
+CORS middleware: Enable cross-origin requests from backend
+Docker Configuration
+[NEW] 
+Dockerfile
+Multi-stage build for optimized image size:
 
-3. Tech Stack
+Stage 1 (builder): Install dependencies in virtual environment
+Stage 2 (runtime): Minimal runtime image with Python 3.9-slim
+Copy only necessary files from builder stage
+Non-root user for security
+Expose port 5000
+Optimized uvicorn command with multiple workers
+[NEW] 
+.dockerignore
+Exclude unnecessary files from Docker build context:
 
-Language: Python 3.9+.
+Python cache files (__pycache__, *.pyc)
+Virtual environments
+Git files
+Documentation
+Test files
+[NEW] 
+docker-compose.yml
+Local development and testing setup:
 
-Framework: FastAPI (để đạt hiệu năng cao nhất).
+Service definition with port mapping (5000:5000)
+Environment variables for Uvicorn configuration
+Volume mounts for development
+Automatic restart policy
+Documentation and Support Files
+[NEW] 
+README.md
+Comprehensive documentation including:
 
-Server: Uvicorn.
+Project overview and architecture
+API endpoint documentation with examples
+Classification logic explanation
+Local development setup
+Docker deployment instructions
+Performance optimization details
+Example curl commands and response formats
+[NEW] 
+.gitignore
+Standard Python gitignore patterns:
 
-Libraries: Scikit-learn (giả lập load model), Pandas, Numpy.
+Python cache and compiled files
+Virtual environments
+IDE configuration
+Environment variables
+Log files
+Verification Plan
+Automated Tests
+Start the service locally:
 
-Docker: Cần có Dockerfile để đóng gói.
+uvicorn main:app --host 0.0.0.0 --port 5000 --reload
+Test classification endpoints with various sensor data scenarios:
 
-4. Logic Phân loại (Rule-based Simulation)
+HOT classification: High temperature (>50) or high CO2 (>1000)
+WARM classification: Medium temperature (35-50)
+COLD classification: Normal conditions
+Edge cases: Exact threshold values
+Test health endpoint:
 
-Để demo hiệu quả và nhanh chóng, hãy cài đặt logic Rule-based kết hợp Random nhẹ (thay vì train model phức tạp tốn thời gian):
+curl http://localhost:5000/health
+Docker Verification
+Build Docker image:
 
-HOT: Nếu temperature > 50 HOẶC co2_level > 1000 (Cảnh báo cháy/ngạt khí).
+docker build -t ml-service-pmnm .
+Run container:
 
-WARM: Nếu temperature > 35 (Nóng nhưng chưa nguy hiểm).
+docker run -p 5000:5000 ml-service-pmnm
+Test API through container:
 
-COLD: Các trường hợp còn lại (Bình thường).
-
-5. Hướng dẫn thực hiện
-
-Bước 1: Setup Project
-
-Tạo requirements.txt: fastapi, uvicorn, scikit-learn, pandas.
-
-Tạo main.py: Khởi tạo ứng dụng FastAPI.
-
-Bước 2: Data Model
-
-Sử dụng Pydantic để định nghĩa Schema đầu vào:
-
-class SensorData(BaseModel):
-    temperature: float
-    humidity: int
-    co2_level: int
-
-
-Bước 3: API Endpoint
-
-Tạo POST /predict:
-
-Nhận vào SensorData.
-
-Thực hiện logic if-else ở mục 4.
-
-Trả về JSON: {"label": "HOT"}.
-
-Bước 4: Dockerize
-
-Viết Dockerfile:
-
-Base image: python:3.9-slim.
-
-Workdir: /app.
-
-Install requirements.
-
-Expose port 5000.
-
-CMD chạy uvicorn host 0.0.0.0 port 5000.
-
-Yêu cầu: Code cần tối ưu độ trễ (Latency) thấp nhất có thể vì sẽ bị Backend gọi liên tục.
+Verify endpoints are accessible
+Check response times for latency optimization
+Performance Testing
+Measure average response time for classification requests
+Should be < 10ms for rule-based classification
+Verify concurrent request handling
